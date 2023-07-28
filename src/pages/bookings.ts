@@ -1,4 +1,4 @@
-import { HTMLElement } from 'node-html-parser';
+import { HTMLElement } from "node-html-parser";
 import { PageParser } from "./page";
 
 export class BookingsPageParser extends PageParser {
@@ -18,8 +18,9 @@ export class BookingsPageParser extends PageParser {
       return [];
     }
     return Array.from(
-      tab.querySelector('thead [data-title="Kurs"]')?.querySelectorAll("option") ??
-        [],
+      tab
+        .querySelector('thead [data-title="Kurs"]')
+        ?.querySelectorAll("option") ?? [],
     )
       .map((e) => ({
         name: e.textContent.trim(),
@@ -27,7 +28,7 @@ export class BookingsPageParser extends PageParser {
       }))
       .filter(({ name, id }) => name && Number.isFinite(id) && id >= 0);
   }
-  
+
   public getAvailableLocations() {
     const tab = this.dom.querySelector(".tab-pane.active");
     if (!tab) {
@@ -35,8 +36,9 @@ export class BookingsPageParser extends PageParser {
       return [];
     }
     return Array.from(
-      tab.querySelector('thead [data-title="M-Bäder"]')?.querySelectorAll("option") ??
-        [],
+      tab
+        .querySelector('thead [data-title="M-Bäder"]')
+        ?.querySelectorAll("option") ?? [],
     )
       .map((e) => ({
         name: e.textContent.trim(),
@@ -44,40 +46,48 @@ export class BookingsPageParser extends PageParser {
       }))
       .filter(({ name, id }) => name && Number.isFinite(id) && id >= 0);
   }
-  
+
   private getCourseRowText(row: HTMLElement, title: string) {
     return row.querySelector(`[data-title="${title}"]`)?.textContent?.trim();
   }
 
   private getCourseRowTextArray(row: HTMLElement, title: string) {
-    return row.querySelector(`[data-title="${title}"]`)?.textContent?.split('\n')?.map((t) => t.trim()).filter((t) => t.length > 0);
+    return row
+      .querySelector(`[data-title="${title}"]`)
+      ?.textContent?.split("\n")
+      ?.map((t) => t.trim())
+      .filter((t) => t.length > 0);
   }
-  
+
   public getFoundCourses() {
     const tab = this.dom.querySelector(".tab-pane.active");
     if (!tab) {
       console.error("Course Type not found");
       return [];
     }
-    
-    if(tab.textContent.includes('Leider bieten wir für diesen Kurs zur Zeit keine Termine an.')) {
-        return [];
+
+    if (
+      tab.textContent.includes(
+        "Leider bieten wir für diesen Kurs zur Zeit keine Termine an.",
+      )
+    ) {
+      return [];
     }
-    
-    return Array.from(tab.querySelectorAll('tbody tr')).map(row => {
-        const titleColumn = row.querySelector('[data-title="Kurs"]');
-        const freiePlaetze = this.getCourseRowText(row, 'Freie Plätze');
-        return {
-            name: titleColumn?.textContent?.trim(),
-            url: titleColumn?.querySelector('[href]')?.getAttribute('href')?.trim(),
-            termin: this.getCourseRowText(row, 'Termin'),
-            anzahlTermine: this.getCourseRowText(row, 'Anz. Termine'),
-            uhrzeit: this.getCourseRowTextArray(row, 'Uhrzeit') ?? [],
-            wochentag: this.getCourseRowTextArray(row, 'Wochentag') ?? [],
-            freiePlaetze: freiePlaetze ? Number.parseInt(freiePlaetze) : undefined,
-            baeder: this.getCourseRowText(row, 'M-Bäder'),
-            ausgebucht: this.getCourseRowText(row, 'Funktionen') === 'Ausgebucht'
-        }
-    })
+
+    return Array.from(tab.querySelectorAll("tbody tr")).map((row) => {
+      const titleColumn = row.querySelector('[data-title="Kurs"]');
+      const freiePlaetze = this.getCourseRowText(row, "Freie Plätze");
+      return {
+        name: titleColumn?.textContent?.trim(),
+        url: titleColumn?.querySelector("[href]")?.getAttribute("href")?.trim(),
+        termin: this.getCourseRowText(row, "Termin"),
+        anzahlTermine: this.getCourseRowText(row, "Anz. Termine"),
+        uhrzeit: this.getCourseRowTextArray(row, "Uhrzeit") ?? [],
+        wochentag: this.getCourseRowTextArray(row, "Wochentag") ?? [],
+        freiePlaetze: freiePlaetze ? Number.parseInt(freiePlaetze) : undefined,
+        baeder: this.getCourseRowText(row, "M-Bäder"),
+        ausgebucht: this.getCourseRowText(row, "Funktionen") === "Ausgebucht",
+      };
+    });
   }
 }

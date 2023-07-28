@@ -26,19 +26,30 @@ async function getAvailableCourses(courseType: number, courseIds: Array<number>,
     return page.getFoundCourses();
 }
 
+async function getMatchingCourses(courseTypes: { name: string; id: number; }[], courseTypeName: string) {
+    const courseType = courseTypes.find(({ name }) => name === courseTypeName);
+    if (!courseType) {
+        return [];
+    }
+    const { courses, locations } = await getCoursesAndLocations(courseType.id);
+    const myCourses = courses.filter(({ name }) => /.*Anfänger.*ab 5 Jahren.*/.test(name)).map(({ id }) => id);
+    const myLocations = locations.filter(({ name }) => name === 'Cosimawellenbad').map(({ id }) => id);
+    
+    return getAvailableCourses(courseType.id, myCourses, myLocations);
+}
+
+function getForKids(courseTypes: { name: string; id: number; }[]) {
+    return getMatchingCourses(courseTypes, 'Schwimmkurse für Kinder');
+}
+
+function getHolidayCourses(courseTypes: { name: string; id: number; }[]) {
+    return getMatchingCourses(courseTypes, 'Ferienkurse');
+}
+
 async function main() {
     const courseTypes = await getCourseTypes();
     
-    const fuerKinder = courseTypes.find(({ name }) => name === 'Schwimmkurse für Kinder');
-    if (!fuerKinder) {
-        throw new Error('No courses for children found');
-    }
-    
-    const { courses, locations } = await getCoursesAndLocations(fuerKinder.id);
-    const myCourses = courses.filter(({ name }) => /^Anfänger.*ab 5 Jahren.*/.test(name)).map(({ id }) => id);
-    const myLocations = locations.filter(({ name }) => name === 'Cosimawellenbad').map(({ id }) => id);
-    
-    const availableCourses = await getAvailableCourses(fuerKinder.id, myCourses, myLocations);
+    const availableCourses = [...await getForKids(courseTypes), ...await getHolidayCourses(courseTypes)];
     if (availableCourses.length === 0) {
         process.exit(1);
     }

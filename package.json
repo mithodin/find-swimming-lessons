@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "run": "node --loader ts-node/esm src/main.ts"
+    "run": "node --loader ts-node/esm src/main.ts",
+    "bundle": "esbuild src/main.ts --platform=node --format=cjs --bundle --outfile=dist/main.cjs"
   },
   "dependencies": {
     "node-html-parser": "^6.1.5",

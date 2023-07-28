@@ -85,7 +85,6 @@ export class SwmDownloader {
         if (method === 'POST' && data) {
             headers['content-type'] = 'application/x-www-form-urlencoded';
             body = data.toString();
-            console.log(body);
         }
         
         const response = await fetch(urlStr, { headers, body, method });

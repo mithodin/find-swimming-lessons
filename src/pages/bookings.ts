@@ -18,7 +18,24 @@ export class BookingsPageParser extends PageParser {
       return [];
     }
     return Array.from(
-      tab.querySelector('[data-title="Kurs"]')?.querySelectorAll("option") ??
+      tab.querySelector('thead [data-title="Kurs"]')?.querySelectorAll("option") ??
+        [],
+    )
+      .map((e) => ({
+        name: e.textContent.trim(),
+        id: Number.parseInt(e.getAttribute("value") ?? "-1"),
+      }))
+      .filter(({ name, id }) => name && Number.isFinite(id) && id >= 0);
+  }
+  
+  public getAvailableLocations() {
+    const tab = this.dom.querySelector(".tab-pane.active");
+    if (!tab) {
+      console.error("Course Type not found");
+      return [];
+    }
+    return Array.from(
+      tab.querySelector('thead [data-title="M-Bäder"]')?.querySelectorAll("option") ??
         [],
     )
       .map((e) => ({
@@ -41,6 +58,10 @@ export class BookingsPageParser extends PageParser {
     if (!tab) {
       console.error("Course Type not found");
       return [];
+    }
+    
+    if(tab.textContent.includes('Leider bieten wir für diesen Kurs zur Zeit keine Termine an.')) {
+        return [];
     }
     
     return Array.from(tab.querySelectorAll('tbody tr')).map(row => {

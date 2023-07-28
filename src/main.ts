@@ -10,16 +10,16 @@ async function getCourseTypes() {
     return courseTypes;
 }
 
-async function getCourses(courseType: number) {
+async function getCoursesAndLocations(courseType: number) {
     const pageSource = await SwmDownloader.singleton.getBookingsPage({ tab: courseType });
     
     const page = new BookingsPageParser(pageSource);
     
-    return page.getAvailableCourses();
+    return { courses: page.getAvailableCourses(), locations: page.getAvailableLocations() };
 }
 
-async function getAvailableCourses(courseType: number) {
-    const pageSource = await SwmDownloader.singleton.searchCourses({ active_tab_id: courseType });
+async function getAvailableCourses(courseType: number, courseIds: Array<number>, locationIds: Array<number>) {
+    const pageSource = await SwmDownloader.singleton.searchCourses({ active_tab_id: courseType, search_course_id_list: courseIds, search_location_id_list: locationIds, search_free_places: 1 });
     
     const page = new BookingsPageParser(pageSource);
     
@@ -34,10 +34,11 @@ async function main() {
         throw new Error('No courses for children found');
     }
     
-    const courses = await getCourses(fuerKinder.id);
-    console.log(courses.filter(({ name }) => /^Anfänger.*ab 5 Jahren.*/.test(name)));
+    const { courses, locations } = await getCoursesAndLocations(fuerKinder.id);
+    const myCourses = courses.filter(({ name }) => /^Anfänger.*ab 5 Jahren.*/.test(name)).map(({ id }) => id);
+    const myLocations = locations.filter(({ name }) => name === 'Cosimawellenbad').map(({ id }) => id);
     
-    console.log(await getAvailableCourses(15));
+    console.log(await getAvailableCourses(fuerKinder.id, myCourses, myLocations));
 }
 
 main().catch(e => {

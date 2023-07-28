@@ -51,12 +51,12 @@ async function main() {
     
     const availableCourses = [...await getForKids(courseTypes), ...await getHolidayCourses(courseTypes)];
     if (availableCourses.length === 0) {
-        process.exit(1);
+        throw new Error('Could not find any courses');
     }
 
     console.log(`Good news! One or more matching courses have been found.\n${availableCourses.map(({ name, url, freiePlaetze }) => `${name} has ${freiePlaetze} free places. Sign up at ${url}.`).join('\n')}`);
 }
 
 main().catch(e => {
-    console.error('find-swimming-lessons failed', e);
+    process.exit(1);
 });

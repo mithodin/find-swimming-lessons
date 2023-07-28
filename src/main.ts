@@ -15,7 +15,15 @@ async function getCourses(courseType: number) {
     
     const page = new BookingsPageParser(pageSource);
     
-    return page.getAvailableCourses(courseType);
+    return page.getAvailableCourses();
+}
+
+async function getAvailableCourses(courseType: number) {
+    const pageSource = await SwmDownloader.singleton.searchCourses({ active_tab_id: courseType });
+    
+    const page = new BookingsPageParser(pageSource);
+    
+    return page.getFoundCourses();
 }
 
 async function main() {
@@ -28,6 +36,8 @@ async function main() {
     
     const courses = await getCourses(fuerKinder.id);
     console.log(courses.filter(({ name }) => /^Anfänger.*ab 5 Jahren.*/.test(name)));
+    
+    console.log(await getAvailableCourses(15));
 }
 
 main().catch(e => {
